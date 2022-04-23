@@ -14,7 +14,7 @@ eureka:
 
 server:
   port: 8081
-spring:
 
+spring:
   application:
     name: book
