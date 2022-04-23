@@ -1,0 +1,20 @@
+service-discovery:
+  ip: localhost
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: ${service-discovery.ip}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${service-discovery.ip}:8761/eureka/
+
+
+server:
+  port: 8081
+spring:
+
+  application:
+    name: book
