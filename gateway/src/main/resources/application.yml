@@ -1,0 +1,88 @@
+service-discovery:
+  ip: localhost
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: ${service-discovery.ip}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${service-discovery.ip}:8761/eureka/
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+
+resilience4j:
+  circuitbreaker:
+    configs: 
+      default:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10
+        record-exceptions: java.net.ConnectException, java.io.IOException, java.util.concurrent.TimeoutException
+    instances:
+      quantity:
+        base-config: default
+
+server:
+  port: 8765
+
+spring:
+  application:
+    name: gataeway
+  cloud:
+    loadbalancer:
+      service-discovery:
+        timeout: 3000
+      configurations: default
+      retry:
+        max-retries-on-same-service-instance: 0
+        max-retries-on-next-service-instance: 1
+        enabled: true
+      enabled: true
+    gateway:
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            methods: GET,POST,PUT
+            exceptions: org.springframework.cloud.gateway.support.NotFoundException,java.io.IOException,org.springframework.cloud.gateway.support.TimeoutException
+
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+
+      routes:
+        # http://localhost:8765/v2/books
+        - id: book
+          uri: lb://book
+          predicates:
+            - Path=/v*/books/**
+
+        # http://localhost:8765/api/v2/books
+        - id: book
+          uri: lb://book
+          predicates:
+            - Path=/api/v*/books/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
