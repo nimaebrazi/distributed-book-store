@@ -1,20 +1,25 @@
-service-discovery:
+config-server:
   ip: localhost
 
-eureka:
-  instance:
-    prefer-ip-address: true
-    ip-address: ${service-discovery.ip}
-  client:
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://${service-discovery.ip}:8761/eureka/
-
-
-server:
-  port: 8081
-
 spring:
+
   application:
     name: book
+
+  profiles:
+    active: production
+
+
+  cloud:
+    config:
+      uri: http://${config-server.ip}:8888
+      label: latest
+      profile: production
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
