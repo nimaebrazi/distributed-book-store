@@ -1,0 +1,40 @@
+service-discovery:
+  ip: localhost
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: ${service-discovery.ip}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${service-discovery.ip}:8761/eureka/
+
+
+spring:
+  jpa:
+    show-sql: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:33060/cloudconfig
+    username: root
+    password: root
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+  profiles:
+    active: jdbc
+
+
+server:
+  port: 8888
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

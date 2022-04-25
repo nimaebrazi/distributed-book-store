@@ -1,0 +1,42 @@
+#  profiles:
+#    active: awss3,jdbc,redis
+#
+#  ## GIT
+#  cloud:
+#    config:
+#      server:
+#
+#        ## Redis
+#        redis:
+#          order: 3
+#
+#        ## JDBC
+#        jdbc:
+#          order: 1
+#          sql: SELECT KEY, VALUE from PROPERTIES where APPLICATION=? and PROFILE=? and LABEL=?
+#
+#        ## AWS S3
+#        awss3:
+#          bucket: cloud-config-eresh
+#          region: us-east-1
+#          order: 2
+#
+#    bus:
+#      enabled: true
+
+spring:
+
+  application:
+    name: config-server
+
+  profiles:
+    active: jdbc
+
+  cloud:
+    config:
+      server:
+        default-label: latest
+        default-profile: production
+        jdbc:
+          sql: "SELECT `key`, value FROM properties WHERE (application='eureka' OR application='management' OR application=?) AND profile=? AND label=? ORDER BY `key`;"
+          order: 0
