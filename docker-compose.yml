@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+  bookstore.db.service:
+    platform: linux/x86_64
+    build:
+      context: ./.docker/mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${WORKSPACE_TIMEZONE}
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+#      - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
+    ports:
+      - "33060:3306"
+    restart: always
+    networks:
+      - bookstore
+
+
+  bookstore.db.gui:
+    image: phpmyadmin:5.0.4
+    container_name: bookstore.db.gui
+    hostname: bookstore.db.gui
+    environment:
+      PMA_HOST: bookstore.db.service
+    restart: always
+    ports:
+      - "9999:80"
+    depends_on:
+      - bookstore.db.service
+    networks:
+      - bookstore
+
+
+networks:
+  bookstore:
+    external: true
